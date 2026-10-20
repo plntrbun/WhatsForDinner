@@ -1,0 +1,1718 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>晚餐吃什麼？🍲 全家晚餐救星</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Canvas Confetti CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Noto Sans TC"', 'sans-serif'],
+            maru: ['"Zen Maru Gothic"', '"Noto Sans TC"', 'sans-serif'],
+          },
+          colors: {
+            bistro: {
+              bg: '#FAF6F0',
+              card: '#FFFFFF',
+              primary: '#E06D53',     /* 暖暖陶土橘 */
+              primaryHover: '#C8573D',
+              secondary: '#E8A858',   /* 烘焙黃 */
+              sage: '#7C9885',        /* 抹香綠 */
+              navy: '#2C3E50',
+              dark: '#3D352E',        /* 暖黑字體 */
+              muted: '#8D847B',
+              border: '#EFE7DC',
+              cream: '#FFFDF9'
+            }
+          },
+          boxShadow: {
+            'cozy': '0 8px 24px -4px rgba(224, 109, 83, 0.12), 0 2px 8px -2px rgba(61, 53, 46, 0.06)',
+            'card': '0 4px 16px -2px rgba(61, 53, 46, 0.06)',
+            'wheel': '0 12px 36px -6px rgba(224, 109, 83, 0.25)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #FAF6F0;
+      color: #3D352E;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    
+    /* 隱藏滾動條但保持滾動 */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* 搖晃與動畫 */
+    @keyframes veto-shake {
+      0%, 100% { transform: translateX(0) rotate(0deg); }
+      20% { transform: translateX(-8px) rotate(-3deg); }
+      40% { transform: translateX(8px) rotate(3deg); }
+      60% { transform: translateX(-6px) rotate(-2deg); }
+      80% { transform: translateX(6px) rotate(2deg); }
+    }
+    .shake {
+      animation: veto-shake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    }
+
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.05); opacity: 0.4; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+    .pulse-effect {
+      animation: pulse-ring 2s infinite ease-in-out;
+    }
+
+    /* 指針擺動效果 */
+    .pointer-tick {
+      transform-origin: top center;
+      transition: transform 0.05s ease-out;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans pb-24 md:pb-12 text-bistro-dark selection:bg-bistro-secondary selection:text-white">
+
+  <!-- Top App Bar -->
+  <header class="sticky top-0 z-40 bg-bistro-cream/90 backdrop-blur-md border-b border-bistro-border px-4 py-3">
+    <div class="max-w-md mx-auto flex items-center justify-between">
+      <div class="flex items-center space-x-2">
+        <span class="text-2xl animate-bounce">🍲</span>
+        <div>
+          <h1 class="font-maru font-black text-lg tracking-tight text-bistro-primary leading-tight flex items-center gap-1.5">
+            晚餐吃什麼？
+            <span class="text-[10px] font-normal bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded-full">家庭救星版</span>
+          </h1>
+          <p class="text-[11px] text-bistro-muted">終結「隨便都好」的家庭哲學大難題</p>
+        </div>
+      </div>
+      
+      <!-- Audio & History Header Tools -->
+      <div class="flex items-center space-x-2">
+        <button id="soundToggleBtn" class="p-2 rounded-full bg-white border border-bistro-border shadow-sm text-bistro-muted hover:text-bistro-primary active:scale-90 transition-all" title="音效開關">
+          <span id="soundIcon" class="text-base">🔊</span>
+        </button>
+        <button id="historyHeaderBtn" class="flex items-center space-x-1 px-2.5 py-1.5 rounded-full bg-white border border-bistro-border shadow-sm text-xs font-medium text-bistro-dark hover:border-bistro-primary active:scale-95 transition-all">
+          <span>🕒</span>
+          <span class="hidden sm:inline">最近吃過</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="flex-1 max-w-md w-full mx-auto p-4 flex flex-col space-y-4">
+
+    <!-- VIEW 1: 抽晚餐 (Wheel View) -->
+    <section id="view-spin" class="tab-view flex flex-col space-y-4">
+      
+      <!-- 篩選列 Filter Tags -->
+      <div class="space-y-2">
+        <div class="flex items-center justify-between text-xs text-bistro-muted px-1">
+          <span class="font-bold flex items-center gap-1">✨ 今日心情篩選：</span>
+          <span id="itemCountBadge" class="bg-amber-100 text-amber-800 text-[11px] font-bold px-2 py-0.5 rounded-full">10 道候選</span>
+        </div>
+        <div class="flex items-center space-x-1.5 overflow-x-auto no-scrollbar py-1">
+          <button class="filter-pill active px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap bg-bistro-primary text-white shadow-sm transition-all" data-category="全部">全部</button>
+          <button class="filter-pill px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap bg-white text-bistro-dark border border-bistro-border hover:border-bistro-primary shadow-sm transition-all" data-category="附近外食">🛵 附近外食</button>
+          <button class="filter-pill px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap bg-white text-bistro-dark border border-bistro-border hover:border-bistro-primary shadow-sm transition-all" data-category="自煮家常菜">🍳 自煮家常</button>
+          <button class="filter-pill px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap bg-white text-bistro-dark border border-bistro-border hover:border-bistro-primary shadow-sm transition-all" data-category="想喝熱湯">🍲 想喝熱湯</button>
+          <button class="filter-pill px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap bg-white text-bistro-dark border border-bistro-border hover:border-bistro-primary shadow-sm transition-all" data-category="清淡健康">🥗 清淡健康</button>
+          <button class="filter-pill px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap bg-white text-bistro-dark border border-bistro-border hover:border-bistro-primary shadow-sm transition-all" data-category="罪惡爽感">🍗 罪惡爽感</button>
+        </div>
+
+        <!-- 避開最近吃過 Checkbox Toggle -->
+        <div class="flex items-center justify-between bg-white px-3.5 py-2 rounded-2xl border border-bistro-border shadow-sm">
+          <label for="excludeRecentToggle" class="flex items-center space-x-2 text-xs font-medium cursor-pointer">
+            <input type="checkbox" id="excludeRecentToggle" checked class="w-4 h-4 rounded text-bistro-primary focus:ring-bistro-primary accent-bistro-primary cursor-pointer">
+            <span class="flex items-center gap-1">
+              <span>🛡️ 避開最近 3 天吃過的菜色</span>
+            </span>
+          </label>
+          <span id="recentExcludedCount" class="text-[11px] text-orange-600 font-semibold hidden">(已自動排除 0 道)</span>
+        </div>
+      </div>
+
+      <!-- Canvas Wheel Container -->
+      <div class="relative w-full aspect-square max-w-[340px] sm:max-w-[370px] mx-auto flex items-center justify-center my-2">
+        <!-- Glow / Background Ring -->
+        <div class="absolute inset-0 rounded-full bg-gradient-to-tr from-orange-200/50 via-amber-100/40 to-rose-200/50 blur-xl -z-10"></div>
+        
+        <!-- Pointer Needle -->
+        <div class="absolute -top-3 z-30 flex flex-col items-center pointer-events-none drop-shadow-md">
+          <div class="w-0 h-0 border-l-[14px] border-l-transparent border-r-[14px] border-r-transparent border-t-[28px] border-t-bistro-primary pointer-tick" id="wheelPointer"></div>
+          <div class="w-3.5 h-3.5 bg-bistro-secondary rounded-full -mt-7 border-2 border-white shadow"></div>
+        </div>
+
+        <!-- Wheel Canvas -->
+        <div class="w-full h-full p-2 rounded-full bg-white shadow-wheel border-4 border-bistro-border/60 flex items-center justify-center">
+          <canvas id="wheelCanvas" class="w-full h-full rounded-full cursor-pointer transition-transform"></canvas>
+        </div>
+
+        <!-- Wheel Center Spin Button -->
+        <button id="centerSpinBtn" class="absolute z-20 w-20 h-20 sm:w-22 sm:h-22 rounded-full bg-gradient-to-br from-bistro-primary via-rose-500 to-amber-500 text-white font-maru font-black text-base shadow-lg border-4 border-white flex flex-col items-center justify-center active:scale-95 transition-all hover:brightness-105 group">
+          <span class="text-xl group-hover:scale-125 transition-transform">🎲</span>
+          <span class="tracking-widest -mt-0.5">抽！</span>
+        </button>
+      </div>
+
+      <!-- Action Button Group -->
+      <div class="flex flex-col space-y-2 pt-1">
+        <button id="mainSpinBtn" class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-bistro-primary to-orange-500 text-white font-maru font-black text-lg shadow-cozy hover:brightness-105 active:scale-[0.98] transition-all flex items-center justify-center space-x-2">
+          <span>✨ 聽天由命！今晚吃什麼？</span>
+        </button>
+        <div class="flex items-center justify-between px-1 text-xs text-bistro-muted">
+          <span>💡 轉盤停下後若全家反悔，可動用「否決權」重抽！</span>
+          <span id="dailyVetoStatus" class="font-bold text-bistro-primary">今日否決權：3/3</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 2: 菜單庫 (Pocket List Management) -->
+    <section id="view-menu" class="tab-view hidden flex flex-col space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="font-maru font-bold text-lg text-bistro-dark">📋 全家私房菜單庫</h2>
+          <p class="text-xs text-bistro-muted">自訂常吃的店家與拿手菜，轉盤只抽你想吃的</p>
+        </div>
+        <button id="openAddDishModalBtn" class="px-3.5 py-2 rounded-xl bg-bistro-primary text-white text-xs font-bold shadow-sm hover:bg-bistro-primaryHover active:scale-95 transition-all flex items-center space-x-1">
+          <span>➕ 新增菜色</span>
+        </button>
+      </div>
+
+      <!-- Quick Search & Actions -->
+      <div class="flex space-x-2">
+        <div class="relative flex-1">
+          <input type="text" id="menuSearchInput" placeholder="搜尋菜名或標籤..." class="w-full pl-9 pr-3 py-2 bg-white rounded-xl border border-bistro-border text-xs focus:outline-none focus:border-bistro-primary shadow-sm">
+          <span class="absolute left-3 top-2.5 text-xs text-bistro-muted">🔍</span>
+        </div>
+        <button id="resetDefaultsBtn" class="px-3 py-2 bg-white rounded-xl border border-bistro-border text-xs font-medium text-bistro-muted hover:text-bistro-dark active:scale-95 transition-all" title="還原預設菜單">
+          ↺ 預設
+        </button>
+      </div>
+
+      <!-- Dishes List -->
+      <div id="dishesListContainer" class="flex flex-col space-y-2.5 max-h-[62vh] overflow-y-auto pr-0.5 no-scrollbar">
+        <!-- Rendered by JS -->
+      </div>
+    </section>
+
+    <!-- VIEW 3: 苦主抽籤 (Fate Wheel: 誰洗碗 / 誰去買) -->
+    <section id="view-fate" class="tab-view hidden flex flex-col space-y-4">
+      <div class="text-center space-y-1">
+        <h2 class="font-maru font-black text-xl text-bistro-dark flex items-center justify-center gap-1.5">
+          <span>🎲 命運大轉盤</span>
+        </h2>
+        <p class="text-xs text-bistro-muted">吃飽了總要有人善後！由命運決定今晚的苦主是誰</p>
+      </div>
+
+      <!-- Task Selector -->
+      <div class="bg-white p-3 rounded-2xl border border-bistro-border shadow-sm space-y-2">
+        <label class="text-xs font-bold text-bistro-muted block">📌 今晚的賭注任務：</label>
+        <div class="grid grid-cols-3 gap-1.5" id="fateTaskGrid">
+          <button class="task-pill active py-2 px-1 rounded-xl text-xs font-bold border border-bistro-primary bg-orange-50 text-bistro-primary transition-all text-center" data-task="🧽 今晚負責洗碗">🧽 誰洗碗</button>
+          <button class="task-pill py-2 px-1 rounded-xl text-xs font-bold border border-bistro-border bg-white text-bistro-dark hover:border-bistro-primary transition-all text-center" data-task="🛵 出門買晚餐">🛵 誰去買</button>
+          <button class="task-pill py-2 px-1 rounded-xl text-xs font-bold border border-bistro-border bg-white text-bistro-dark hover:border-bistro-primary transition-all text-center" data-task="🗑️ 提垃圾下樓倒">🗑️ 誰倒垃圾</button>
+        </div>
+      </div>
+
+      <!-- Family Members List & Editor -->
+      <div class="bg-white p-3.5 rounded-2xl border border-bistro-border shadow-sm space-y-2.5">
+        <div class="flex items-center justify-between text-xs">
+          <span class="font-bold text-bistro-dark">👥 參與抽籤的家庭成員：</span>
+          <span class="text-bistro-muted text-[11px]">點擊成員可移除</span>
+        </div>
+        <div id="familyChipsContainer" class="flex flex-wrap gap-1.5">
+          <!-- Member Chips rendered here -->
+        </div>
+        <!-- Add Member Input -->
+        <div class="flex space-x-1.5 pt-1">
+          <input type="text" id="newMemberInput" placeholder="輸入名字（如：爸爸、小明）" maxlength="8" class="flex-1 px-3 py-1.5 bg-bistro-bg/60 rounded-xl border border-bistro-border text-xs focus:outline-none focus:border-bistro-primary">
+          <button id="addMemberBtn" class="px-3.5 py-1.5 bg-bistro-sage text-white text-xs font-bold rounded-xl active:scale-95 transition-all">＋ 加入</button>
+        </div>
+      </div>
+
+      <!-- Fate Wheel Canvas -->
+      <div class="relative w-full aspect-square max-w-[280px] mx-auto flex items-center justify-center my-1">
+        <!-- Pointer Needle -->
+        <div class="absolute -top-3 z-30 flex flex-col items-center pointer-events-none drop-shadow-md">
+          <div class="w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[24px] border-t-bistro-navy pointer-tick" id="fateWheelPointer"></div>
+          <div class="w-3 h-3 bg-amber-400 rounded-full -mt-6 border-2 border-white shadow"></div>
+        </div>
+
+        <div class="w-full h-full p-2 rounded-full bg-white shadow-wheel border-4 border-bistro-border/70 flex items-center justify-center">
+          <canvas id="fateWheelCanvas" class="w-full h-full rounded-full cursor-pointer"></canvas>
+        </div>
+
+        <button id="centerFateSpinBtn" class="absolute z-20 w-16 h-16 rounded-full bg-gradient-to-br from-bistro-navy to-slate-700 text-white font-maru font-bold text-xs shadow-lg border-4 border-white flex flex-col items-center justify-center active:scale-95 transition-all">
+          <span class="text-base">⚡</span>
+          <span>抽苦主</span>
+        </button>
+      </div>
+
+      <button id="fateSpinBtn" class="w-full py-3 px-6 rounded-2xl bg-bistro-navy text-white font-maru font-black text-base shadow-cozy hover:bg-slate-800 active:scale-[0.98] transition-all flex items-center justify-center space-x-2">
+        <span>⚡ 命運揭曉！看今晚誰中獎</span>
+      </button>
+    </section>
+
+  </main>
+
+  <!-- Bottom Navigation Bar -->
+  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-bistro-border shadow-lg">
+    <div class="max-w-md mx-auto grid grid-cols-3 py-1.5 px-3">
+      <button class="nav-tab active flex flex-col items-center justify-center py-1 rounded-xl text-bistro-primary font-bold transition-all" data-target="view-spin">
+        <span class="text-xl">🎯</span>
+        <span class="text-[11px] font-maru tracking-tight">抽晚餐</span>
+      </button>
+      <button class="nav-tab flex flex-col items-center justify-center py-1 rounded-xl text-bistro-muted font-medium hover:text-bistro-dark transition-all" data-target="view-menu">
+        <span class="text-xl">📋</span>
+        <span class="text-[11px] font-maru tracking-tight">菜單庫</span>
+      </button>
+      <button class="nav-tab flex flex-col items-center justify-center py-1 rounded-xl text-bistro-muted font-medium hover:text-bistro-dark transition-all" data-target="view-fate">
+        <span class="text-xl">🎲</span>
+        <span class="text-[11px] font-maru tracking-tight">苦主抽籤</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ================= MODALS & POPUPS ================= -->
+
+  <!-- RESULT MODAL: 抽中結果展示 -->
+  <div id="resultModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300">
+    <div id="resultCard" class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-bistro-border transform scale-90 transition-transform duration-300 text-center relative overflow-hidden">
+      <!-- Decorative background glow -->
+      <div class="absolute -top-12 -right-12 w-32 h-32 bg-amber-200/50 rounded-full blur-2xl"></div>
+      <div class="absolute -bottom-12 -left-12 w-32 h-32 bg-rose-200/50 rounded-full blur-2xl"></div>
+
+      <div class="relative z-10 space-y-4">
+        <div class="inline-block p-1 bg-amber-100/70 rounded-full px-3 py-1 text-xs font-bold text-amber-800">
+          🎉 命運為全家選定今晚吃：
+        </div>
+
+        <div class="space-y-1">
+          <div id="resultEmoji" class="text-6xl drop-shadow-sm py-1">🍲</div>
+          <h3 id="resultName" class="font-maru font-black text-2xl text-bistro-dark tracking-tight">暖呼呼小火鍋</h3>
+          <p id="resultNote" class="text-xs text-bistro-muted">老先覺或錢都熱騰騰高湯</p>
+        </div>
+
+        <div id="resultTags" class="flex flex-wrap items-center justify-center gap-1.5 pt-1">
+          <span class="text-[10px] bg-bistro-bg px-2.5 py-0.5 rounded-full text-bistro-muted font-medium">🛵 附近外食</span>
+        </div>
+
+        <!-- Decision Buttons -->
+        <div class="pt-3 flex flex-col space-y-2">
+          <button id="acceptDishBtn" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-bistro-primary to-orange-500 text-white font-maru font-black text-sm shadow-md hover:brightness-105 active:scale-95 transition-all flex items-center justify-center space-x-1.5">
+            <span>🍴 就決定是它了！(加入記錄)</span>
+          </button>
+          
+          <button id="vetoDishBtn" class="w-full py-2.5 px-4 rounded-xl bg-orange-50 text-bistro-primary border border-bistro-primary/30 font-bold text-xs hover:bg-orange-100 active:scale-95 transition-all flex items-center justify-center space-x-1">
+            <span>🙅‍♂️ 全家否決！剔除並立刻重抽</span>
+            <span id="vetoCountBadge" class="bg-bistro-primary text-white text-[10px] px-1.5 py-0.2 rounded-full ml-1">剩 3 次</span>
+          </button>
+
+          <button id="closeResultModalBtn" class="text-xs text-bistro-muted hover:text-bistro-dark py-1">
+            先等等，再看一眼
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FATE RESULT MODAL: 苦主中獎通知 -->
+  <div id="fateResultModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300">
+    <div id="fateResultCard" class="bg-white w-full max-w-xs rounded-3xl p-6 shadow-2xl border border-bistro-border transform scale-90 transition-transform duration-300 text-center relative space-y-4">
+      <div class="text-5xl">👑</div>
+      <div class="space-y-1">
+        <span class="text-xs font-bold text-bistro-navy tracking-wider uppercase bg-blue-50 px-2 py-0.5 rounded-full">中獎苦主出爐！</span>
+        <h3 id="fateWinnerName" class="font-maru font-black text-3xl text-bistro-primary pt-1">爸爸</h3>
+        <p id="fateTaskDesc" class="text-sm font-bold text-bistro-dark pt-1">🧽 今晚負責洗碗</p>
+      </div>
+      <p class="text-xs text-bistro-muted">賭上全家尊嚴的抽籤，不得耍賴喔！</p>
+      <button id="closeFateResultBtn" class="w-full py-2.5 rounded-xl bg-bistro-navy text-white text-xs font-bold shadow hover:bg-slate-800 transition-all">
+        知道了，辛苦了！👏
+      </button>
+    </div>
+  </div>
+
+  <!-- ADD / EDIT DISH MODAL -->
+  <div id="dishFormModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl border border-bistro-border text-left relative max-h-[90vh] overflow-y-auto no-scrollbar space-y-4">
+      <div class="flex items-center justify-between border-b border-bistro-border pb-3">
+        <h3 id="dishModalTitle" class="font-maru font-bold text-lg text-bistro-dark">➕ 新增私房菜色/店家</h3>
+        <button id="closeDishFormBtn" class="p-1 rounded-full text-bistro-muted hover:text-bistro-dark text-lg">✕</button>
+      </div>
+
+      <form id="dishForm" class="space-y-3.5">
+        <input type="hidden" id="dishEditId" value="">
+
+        <!-- Name & Emoji -->
+        <div class="flex space-x-2">
+          <div class="w-20">
+            <label class="text-[11px] font-bold text-bistro-muted block mb-1">圖示</label>
+            <input type="text" id="dishEmojiInput" value="🍲" class="w-full text-center text-2xl py-2 bg-bistro-bg/70 rounded-xl border border-bistro-border focus:border-bistro-primary focus:outline-none">
+          </div>
+          <div class="flex-1">
+            <label class="text-[11px] font-bold text-bistro-muted block mb-1">料理或餐廳名稱 *</label>
+            <input type="text" id="dishNameInput" required placeholder="如：日式炸豬排咖哩" class="w-full px-3 py-2.5 bg-bistro-bg/70 rounded-xl border border-bistro-border text-xs focus:border-bistro-primary focus:outline-none">
+          </div>
+        </div>
+
+        <!-- Note / Address -->
+        <div>
+          <label class="text-[11px] font-bold text-bistro-muted block mb-1">備註 / 招牌餐點 (選填)</label>
+          <input type="text" id="dishNoteInput" placeholder="如：巷口轉角老店、記得加蛋" class="w-full px-3 py-2 bg-bistro-bg/70 rounded-xl border border-bistro-border text-xs focus:border-bistro-primary focus:outline-none">
+        </div>
+
+        <!-- Tags Selection -->
+        <div>
+          <label class="text-[11px] font-bold text-bistro-muted block mb-1.5">料理特色標籤 (可複選)</label>
+          <div class="flex flex-wrap gap-1.5" id="formTagsList">
+            <label class="tag-checkbox-pill cursor-pointer px-3 py-1 rounded-full text-xs font-medium border border-bistro-border bg-white text-bistro-dark flex items-center space-x-1">
+              <input type="checkbox" value="附近外食" class="hidden">
+              <span>🛵 附近外食</span>
+            </label>
+            <label class="tag-checkbox-pill cursor-pointer px-3 py-1 rounded-full text-xs font-medium border border-bistro-border bg-white text-bistro-dark flex items-center space-x-1">
+              <input type="checkbox" value="自煮家常菜" class="hidden">
+              <span>🍳 自煮家常菜</span>
+            </label>
+            <label class="tag-checkbox-pill cursor-pointer px-3 py-1 rounded-full text-xs font-medium border border-bistro-border bg-white text-bistro-dark flex items-center space-x-1">
+              <input type="checkbox" value="想喝熱湯" class="hidden">
+              <span>🍲 想喝熱湯</span>
+            </label>
+            <label class="tag-checkbox-pill cursor-pointer px-3 py-1 rounded-full text-xs font-medium border border-bistro-border bg-white text-bistro-dark flex items-center space-x-1">
+              <input type="checkbox" value="清淡健康" class="hidden">
+              <span>🥗 清淡健康</span>
+            </label>
+            <label class="tag-checkbox-pill cursor-pointer px-3 py-1 rounded-full text-xs font-medium border border-bistro-border bg-white text-bistro-dark flex items-center space-x-1">
+              <input type="checkbox" value="罪惡爽感" class="hidden">
+              <span>🍗 罪惡爽感</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="pt-2">
+          <button type="submit" class="w-full py-3 rounded-xl bg-bistro-primary text-white font-maru font-bold text-sm shadow hover:bg-bistro-primaryHover transition-all">
+            儲存菜色
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- HISTORY MODAL -->
+  <div id="historyModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl border border-bistro-border max-h-[80vh] flex flex-col space-y-3">
+      <div class="flex items-center justify-between border-b border-bistro-border pb-2.5">
+        <h3 class="font-maru font-bold text-base text-bistro-dark flex items-center gap-1.5">
+          <span>🕒 最近吃過歷史</span>
+        </h3>
+        <button id="closeHistoryModalBtn" class="text-bistro-muted hover:text-bistro-dark text-base p-1">✕</button>
+      </div>
+
+      <div id="historyListContainer" class="flex-1 overflow-y-auto space-y-2 pr-1 no-scrollbar min-h-[160px]">
+        <!-- Dynamic History items -->
+      </div>
+
+      <div class="pt-2 border-t border-bistro-border flex items-center justify-between">
+        <button id="clearHistoryBtn" class="text-xs text-rose-500 hover:underline">清空歷史紀錄</button>
+        <span class="text-[11px] text-bistro-muted">記錄最近 14 天</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CUSTOM CONFIRM DIALOG MODAL (Never alert/confirm) -->
+  <div id="confirmDialogModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="bg-white w-full max-w-xs rounded-3xl p-5 shadow-2xl border border-bistro-border text-center space-y-3">
+      <div id="confirmIcon" class="text-3xl">⚠️</div>
+      <h4 id="confirmTitle" class="font-maru font-bold text-base text-bistro-dark">確認重設？</h4>
+      <p id="confirmMessage" class="text-xs text-bistro-muted">這將會清除自訂清單並還原成預設菜色。</p>
+      <div class="grid grid-cols-2 gap-2 pt-2">
+        <button id="confirmCancelBtn" class="py-2 rounded-xl bg-bistro-bg text-bistro-dark font-medium text-xs hover:bg-stone-200 transition-all">取消</button>
+        <button id="confirmOkBtn" class="py-2 rounded-xl bg-bistro-primary text-white font-bold text-xs hover:bg-bistro-primaryHover transition-all">確定執行</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toastContainer" class="fixed top-16 left-1/2 -translate-x-1/2 z-50 pointer-events-none flex flex-col items-center space-y-2 w-full max-w-xs px-4"></div>
+
+  <!-- ================= JAVASCRIPT LOGIC ================= -->
+  <script>
+    /* =========================================================
+       1. SOUND SYNTHESIS ENGINE (Web Audio API - Zero External Files)
+       ========================================================= */
+    class AudioEngine {
+      constructor() {
+        this.ctx = null;
+        this.muted = localStorage.getItem('dinner_sound_muted') === 'true';
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) this.ctx = new AudioContext();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      toggleMute() {
+        this.muted = !this.muted;
+        localStorage.setItem('dinner_sound_muted', this.muted);
+        return this.muted;
+      }
+
+      playTick() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(500, this.ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(120, this.ctx.currentTime + 0.035);
+          gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.035);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + 0.035);
+        } catch (e) {}
+      }
+
+      playWin() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        try {
+          // Play a cheerful major triad
+          const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+          notes.forEach((freq, idx) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            const startTime = this.ctx.currentTime + idx * 0.08;
+            osc.frequency.setValueAtTime(freq, startTime);
+            gain.gain.setValueAtTime(0.2, startTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.35);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(startTime);
+            osc.stop(startTime + 0.35);
+          });
+        } catch (e) {}
+      }
+
+      playVeto() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        try {
+          // Comical boing down
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(320, this.ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(80, this.ctx.currentTime + 0.28);
+          gain.gain.setValueAtTime(0.18, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.28);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + 0.28);
+        } catch (e) {}
+      }
+    }
+
+    const sound = new AudioEngine();
+
+    /* =========================================================
+       2. DEFAULT DATA & STORAGE MANAGERS
+       ========================================================= */
+    const STORAGE_KEYS = {
+      MENU: 'dinner_wheel_menu_v2',
+      HISTORY: 'dinner_wheel_history_v2',
+      FAMILY: 'dinner_wheel_family_v2',
+      VETO: 'dinner_wheel_veto_v2'
+    };
+
+    const DEFAULT_DISHES = [
+      { id: 'd1', name: '暖呼呼小火鍋', emoji: '🍲', tags: ['附近外食', '想喝熱湯'], active: true, note: '錢都或小火鍋店' },
+      { id: 'd2', name: '濃郁日式拉麵', emoji: '🍜', tags: ['附近外食', '想喝熱湯'], active: true, note: '豚骨濃湯配溏心蛋' },
+      { id: 'd3', name: '日式牛肉咖哩飯', emoji: '🍛', tags: ['自煮家常菜', '罪惡爽感'], active: true, note: '馬鈴薯燉軟微辣最開胃' },
+      { id: 'd4', name: '滷肉飯配貢丸湯', emoji: '🥣', tags: ['附近外食', '想喝熱湯'], active: true, note: '街角傳統古早味' },
+      { id: 'd5', name: '手工水餃 + 酸辣湯', emoji: '🥟', tags: ['自煮家常菜', '想喝熱湯'], active: true, note: '高麗菜韭菜各來十顆' },
+      { id: 'd6', name: '白酒蛤蜊義大利麵', emoji: '🍝', tags: ['自煮家常菜', '附近外食'], active: true, note: '蒜香十足好開胃' },
+      { id: 'd7', name: '紅燒半筋半肉牛肉麵', emoji: '🥩', tags: ['附近外食', '想喝熱湯'], active: true, note: '酸菜加滿牛油香氣' },
+      { id: 'd8', name: '少油少鹽健康便當', emoji: '🍱', tags: ['附近外食', '清淡健康'], active: true, note: '舒肥雞胸配紫米飯' },
+      { id: 'd9', name: '家常三菜一湯', emoji: '🍳', tags: ['自煮家常菜', '清淡健康'], active: true, note: '番茄炒蛋 + 煎魚 + 炒時蔬 + 蛋花湯' },
+      { id: 'd10', name: '美式披薩 + 酥脆炸雞', emoji: '🍕', tags: ['附近外食', '罪惡爽感'], active: true, note: '週五放縱全家快樂餐' },
+      { id: 'd11', name: '香辣韓式泡菜豆腐鍋', emoji: '🥘', tags: ['附近外食', '想喝熱湯', '罪惡爽感'], active: true, note: '咕嘟咕嘟滾燙超下飯' },
+      { id: 'd12', name: '清蒸鱸魚配十穀飯', emoji: '🐟', tags: ['自煮家常菜', '清淡健康'], active: true, note: '薑絲蔥段原汁原味' }
+    ];
+
+    const DEFAULT_MEMBERS = ['爸爸', '媽媽', '我', '弟弟/哥哥', '妹妹/姊姊', '猜拳解決'];
+
+    // Palette for Wheel sectors
+    const WHEEL_COLORS = [
+      '#F4A261', '#E76F51', '#E9C46A', '#2A9D8F', '#264653',
+      '#DDA15E', '#BC6C25', '#84A98C', '#52796F', '#E07A5F'
+    ];
+
+    // State
+    let menuList = [];
+    let historyList = [];
+    let familyMembers = [];
+    let vetoState = { date: '', count: 3 };
+    let currentCategory = '全部';
+    let temporarilyExcludedIds = []; // dishes vetoed in this session
+
+    // Wheel animation state
+    let isSpinning = false;
+    let currentRotation = 0; // in radians
+    let activeDishesForWheel = [];
+    let lastTickSegment = -1;
+
+    // Fate wheel animation state
+    let isFateSpinning = false;
+    let currentFateRotation = 0;
+    let selectedFateTask = '🧽 今晚負責洗碗';
+
+    /* =========================================================
+       3. STORAGE HELPER FUNCTIONS
+       ========================================================= */
+    function loadData() {
+      // Menu
+      const savedMenu = localStorage.getItem(STORAGE_KEYS.MENU);
+      if (savedMenu) {
+        try { menuList = JSON.parse(savedMenu); } catch (e) { menuList = [...DEFAULT_DISHES]; }
+      } else {
+        menuList = [...DEFAULT_DISHES];
+        saveMenu();
+      }
+
+      // History
+      const savedHistory = localStorage.getItem(STORAGE_KEYS.HISTORY);
+      if (savedHistory) {
+        try { historyList = JSON.parse(savedHistory); } catch (e) { historyList = []; }
+      } else {
+        historyList = [];
+      }
+
+      // Family
+      const savedFamily = localStorage.getItem(STORAGE_KEYS.FAMILY);
+      if (savedFamily) {
+        try { familyMembers = JSON.parse(savedFamily); } catch (e) { familyMembers = [...DEFAULT_MEMBERS]; }
+      } else {
+        familyMembers = [...DEFAULT_MEMBERS];
+        saveFamily();
+      }
+
+      // Veto tracker (resets daily)
+      const today = new Date().toISOString().slice(0, 10);
+      const savedVeto = localStorage.getItem(STORAGE_KEYS.VETO);
+      if (savedVeto) {
+        try {
+          const parsed = JSON.parse(savedVeto);
+          if (parsed.date === today) {
+            vetoState = parsed;
+          } else {
+            vetoState = { date: today, count: 3 };
+            saveVeto();
+          }
+        } catch (e) {
+          vetoState = { date: today, count: 3 };
+        }
+      } else {
+        vetoState = { date: today, count: 3 };
+        saveVeto();
+      }
+    }
+
+    function saveMenu() {
+      localStorage.setItem(STORAGE_KEYS.MENU, JSON.stringify(menuList));
+    }
+
+    function saveHistory() {
+      localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(historyList));
+    }
+
+    function saveFamily() {
+      localStorage.setItem(STORAGE_KEYS.FAMILY, JSON.stringify(familyMembers));
+    }
+
+    function saveVeto() {
+      localStorage.setItem(STORAGE_KEYS.VETO, JSON.stringify(vetoState));
+    }
+
+    /* =========================================================
+       4. TOAST & MODAL UTILITIES (NO ALERT / CONFIRM)
+       ========================================================= */
+    function showToast(message, icon = '✨') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = 'flex items-center space-x-2 bg-bistro-dark text-white text-xs font-bold px-4 py-2.5 rounded-2xl shadow-xl transform translate-y-2 opacity-0 transition-all duration-300 pointer-events-auto border border-white/10';
+      toast.innerHTML = `<span>${icon}</span><span>${message}</span>`;
+      container.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', '-translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 2600);
+    }
+
+    function showCustomConfirm(title, message, icon, onConfirm) {
+      const modal = document.getElementById('confirmDialogModal');
+      const titleEl = document.getElementById('confirmTitle');
+      const msgEl = document.getElementById('confirmMessage');
+      const iconEl = document.getElementById('confirmIcon');
+      const okBtn = document.getElementById('confirmOkBtn');
+      const cancelBtn = document.getElementById('confirmCancelBtn');
+
+      titleEl.textContent = title;
+      msgEl.textContent = message;
+      iconEl.textContent = icon || '⚠️';
+
+      modal.classList.remove('opacity-0', 'pointer-events-none');
+
+      const cleanup = () => {
+        modal.classList.add('opacity-0', 'pointer-events-none');
+        okBtn.onclick = null;
+        cancelBtn.onclick = null;
+      };
+
+      okBtn.onclick = () => {
+        cleanup();
+        if (onConfirm) onConfirm();
+      };
+      cancelBtn.onclick = cleanup;
+    }
+
+    /* =========================================================
+       5. DINNER WHEEL CANVAS ENGINE
+       ========================================================= */
+    const canvas = document.getElementById('wheelCanvas');
+    const ctx = canvas.getContext('2d');
+    let wheelAnimationId = null;
+
+    function resizeCanvas(c) {
+      const rect = c.parentElement.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      const size = Math.floor(rect.width);
+      c.width = size * dpr;
+      c.height = size * dpr;
+      const context = c.getContext('2d');
+      context.scale(dpr, dpr);
+      return size;
+    }
+
+    // Filter active dishes based on Category + Recents + Session Vetoes
+    function getFilteredDishes() {
+      const excludeRecent = document.getElementById('excludeRecentToggle').checked;
+      const now = new Date().getTime();
+      const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
+
+      // recent names within 3 days
+      const recentNames = historyList
+        .filter(item => (now - new Date(item.date).getTime()) < threeDaysMs)
+        .map(item => item.name);
+
+      let filtered = menuList.filter(dish => dish.active);
+
+      // Category filter
+      if (currentCategory !== '全部') {
+        filtered = filtered.filter(dish => dish.tags && dish.tags.includes(currentCategory));
+      }
+
+      // Exclude temporarily vetoed dishes
+      filtered = filtered.filter(dish => !temporarilyExcludedIds.includes(dish.id));
+
+      // Exclude recently eaten
+      let recentExcludedCount = 0;
+      if (excludeRecent) {
+        const preCount = filtered.length;
+        filtered = filtered.filter(dish => !recentNames.includes(dish.name));
+        recentExcludedCount = preCount - filtered.length;
+      }
+
+      // UI badge updates
+      const recentBadge = document.getElementById('recentExcludedCount');
+      if (recentExcludedCount > 0 && excludeRecent) {
+        recentBadge.textContent = `(已避開 ${recentExcludedCount} 道近期吃過)`;
+        recentBadge.classList.remove('hidden');
+      } else {
+        recentBadge.classList.add('hidden');
+      }
+
+      document.getElementById('itemCountBadge').textContent = `${filtered.length} 道候選`;
+      return filtered;
+    }
+
+    function drawWheel() {
+      if (!canvas) return;
+      const size = canvas.width / (window.devicePixelRatio || 1);
+      const center = size / 2;
+      const radius = center - 8;
+
+      ctx.clearRect(0, 0, size, size);
+
+      activeDishesForWheel = getFilteredDishes();
+      const numSegments = activeDishesForWheel.length;
+
+      if (numSegments === 0) {
+        // Draw empty state
+        ctx.save();
+        ctx.fillStyle = '#F4EFEA';
+        ctx.beginPath();
+        ctx.arc(center, center, radius, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.fillStyle = '#8D847B';
+        ctx.font = 'bold 14px "Noto Sans TC", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('無符合菜色，請放寬篩選', center, center);
+        ctx.restore();
+        return;
+      }
+
+      const arcSize = (2 * Math.PI) / numSegments;
+
+      // Draw Segments
+      for (let i = 0; i < numSegments; i++) {
+        const dish = activeDishesForWheel[i];
+        const angle = currentRotation + i * arcSize;
+        const color = WHEEL_COLORS[i % WHEEL_COLORS.length];
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(center, center);
+        ctx.arc(center, center, radius, angle, angle + arcSize);
+        ctx.closePath();
+        ctx.fillStyle = color;
+        ctx.fill();
+
+        // Slice borders
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        // Draw Content (Emoji + Name)
+        ctx.save();
+        ctx.translate(center, center);
+        ctx.rotate(angle + arcSize / 2);
+
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#FFFFFF';
+        ctx.shadowColor = 'rgba(0,0,0,0.3)';
+        ctx.shadowBlur = 4;
+
+        // Font size adjusts depending on number of segments
+        const fontSize = numSegments > 10 ? 11 : (numSegments > 6 ? 12 : 14);
+        ctx.font = `bold ${fontSize}px "Noto Sans TC", sans-serif`;
+
+        // Format name length
+        let displayName = dish.name;
+        if (numSegments > 8 && displayName.length > 5) {
+          displayName = displayName.substring(0, 5) + '..';
+        }
+
+        const textDist = radius - 18;
+        ctx.fillText(`${dish.emoji || '🍴'} ${displayName}`, textDist, fontSize / 3);
+
+        ctx.restore();
+        ctx.restore();
+      }
+
+      // Outer rim
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(center, center, radius, 0, 2 * Math.PI);
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 4;
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Pointer is at the top of the canvas (angle = -Math.PI / 2 or 1.5 * Math.PI)
+    function getSelectedDishIndex() {
+      if (activeDishesForWheel.length === 0) return -1;
+      const numSegments = activeDishesForWheel.length;
+      const arcSize = (2 * Math.PI) / numSegments;
+      
+      // Pointer is fixed at top: 3pi/2
+      const pointerAngle = 1.5 * Math.PI;
+      let localAngle = (pointerAngle - currentRotation) % (2 * Math.PI);
+      if (localAngle < 0) localAngle += 2 * Math.PI;
+
+      return Math.floor(localAngle / arcSize) % numSegments;
+    }
+
+    function spinDinnerWheel() {
+      if (isSpinning) return;
+      activeDishesForWheel = getFilteredDishes();
+
+      if (activeDishesForWheel.length === 0) {
+        showToast('目前沒有可抽的菜色！請放寬標籤或取消避開最近吃過', '⚠️');
+        return;
+      }
+
+      if (activeDishesForWheel.length === 1) {
+        showToast('只剩一道菜，不用轉了直接吃吧！🎉', '😄');
+        showResultModal(activeDishesForWheel[0]);
+        return;
+      }
+
+      isSpinning = true;
+      const spinBtn = document.getElementById('mainSpinBtn');
+      const centerBtn = document.getElementById('centerSpinBtn');
+      spinBtn.disabled = true;
+      centerBtn.disabled = true;
+      spinBtn.classList.add('opacity-70', 'cursor-not-allowed');
+
+      // Audio tick trigger
+      lastTickSegment = getSelectedDishIndex();
+
+      // Physics params
+      const minDuration = 3800; // ms
+      const startTime = performance.now();
+      const startRotation = currentRotation;
+      // 5 to 8 full spins + random offset
+      const totalSpinAngle = (Math.PI * 2 * (5 + Math.random() * 3)) + (Math.random() * Math.PI * 2);
+
+      // Pointer element for tick wiggle
+      const pointerEl = document.getElementById('wheelPointer');
+
+      function animateSpin(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / minDuration, 1);
+
+        // Cubic ease-out
+        const ease = 1 - Math.pow(1 - progress, 3.5);
+        currentRotation = startRotation + totalSpinAngle * ease;
+
+        drawWheel();
+
+        // Sound tick check
+        const currentSegment = getSelectedDishIndex();
+        if (currentSegment !== lastTickSegment) {
+          sound.playTick();
+          lastTickSegment = currentSegment;
+          // Wiggle pointer
+          if (pointerEl) {
+            pointerEl.style.transform = 'rotate(-14deg)';
+            setTimeout(() => { pointerEl.style.transform = 'rotate(0deg)'; }, 45);
+          }
+        }
+
+        if (progress < 1) {
+          wheelAnimationId = requestAnimationFrame(animateSpin);
+        } else {
+          isSpinning = false;
+          spinBtn.disabled = false;
+          centerBtn.disabled = false;
+          spinBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+
+          const winnerIndex = getSelectedDishIndex();
+          const selectedDish = activeDishesForWheel[winnerIndex];
+
+          sound.playWin();
+          triggerConfetti();
+          showResultModal(selectedDish);
+        }
+      }
+
+      wheelAnimationId = requestAnimationFrame(animateSpin);
+    }
+
+    /* Confetti Particle Burst */
+    function triggerConfetti() {
+      if (typeof confetti === 'function') {
+        confetti({
+          particleCount: 70,
+          spread: 65,
+          origin: { y: 0.65 },
+          colors: ['#E06D53', '#E8A858', '#7C9885', '#F4A261', '#E76F51']
+        });
+      }
+    }
+
+    /* =========================================================
+       6. RESULT MODAL & VETO SYSTEM
+       ========================================================= */
+    let currentChosenDish = null;
+
+    function showResultModal(dish) {
+      currentChosenDish = dish;
+      const modal = document.getElementById('resultModal');
+      const card = document.getElementById('resultCard');
+
+      document.getElementById('resultEmoji').textContent = dish.emoji || '🍲';
+      document.getElementById('resultName').textContent = dish.name;
+      document.getElementById('resultNote').textContent = dish.note || '美味全家共饗';
+
+      // Render tags
+      const tagsContainer = document.getElementById('resultTags');
+      tagsContainer.innerHTML = '';
+      if (dish.tags && dish.tags.length > 0) {
+        dish.tags.forEach(t => {
+          const span = document.createElement('span');
+          span.className = 'text-[11px] bg-bistro-bg px-2.5 py-0.5 rounded-full text-bistro-dark font-medium border border-bistro-border';
+          span.textContent = t;
+          tagsContainer.appendChild(span);
+        });
+      }
+
+      // Update Veto Badge
+      updateVetoBadge();
+
+      modal.classList.remove('opacity-0', 'pointer-events-none');
+      card.classList.remove('scale-90');
+      card.classList.add('scale-100');
+    }
+
+    function closeResultModal() {
+      const modal = document.getElementById('resultModal');
+      const card = document.getElementById('resultCard');
+      card.classList.remove('scale-100');
+      card.classList.add('scale-90');
+      modal.classList.add('opacity-0', 'pointer-events-none');
+    }
+
+    function updateVetoBadge() {
+      const badge = document.getElementById('vetoCountBadge');
+      const statusText = document.getElementById('dailyVetoStatus');
+      const vetoBtn = document.getElementById('vetoDishBtn');
+
+      badge.textContent = `剩 ${vetoState.count} 次`;
+      statusText.textContent = `今日否決權：${vetoState.count}/3`;
+
+      if (vetoState.count <= 0) {
+        vetoBtn.disabled = true;
+        vetoBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      } else {
+        vetoBtn.disabled = false;
+        vetoBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+      }
+    }
+
+    function handleVeto() {
+      if (vetoState.count <= 0) {
+        showToast('今日 3 次否決權已全數用盡！不要挑食啦～', '🙅');
+        return;
+      }
+
+      if (!currentChosenDish) return;
+
+      sound.playVeto();
+      const card = document.getElementById('resultCard');
+      card.classList.add('shake');
+
+      vetoState.count -= 1;
+      saveVeto();
+      updateVetoBadge();
+
+      // Add to session exclusion
+      temporarilyExcludedIds.push(currentChosenDish.id);
+
+      setTimeout(() => {
+        card.classList.remove('shake');
+        closeResultModal();
+        showToast(`已否決【${currentChosenDish.name}】！立即重抽`, '⚡');
+
+        // Immediately re-spin
+        setTimeout(() => {
+          spinDinnerWheel();
+        }, 300);
+      }, 400);
+    }
+
+    function handleAcceptDish() {
+      if (!currentChosenDish) return;
+
+      // Add to History
+      const record = {
+        id: 'hist_' + Date.now(),
+        name: currentChosenDish.name,
+        emoji: currentChosenDish.emoji,
+        date: new Date().toISOString()
+      };
+      historyList.unshift(record);
+      // Keep up to 30 items
+      if (historyList.length > 30) historyList.pop();
+      saveHistory();
+
+      closeResultModal();
+      showToast(`太棒了！今晚就開開心心吃【${currentChosenDish.name}】！`, '🎉');
+      renderHistoryList();
+      drawWheel();
+    }
+
+    /* =========================================================
+       7. MENU DATABASE VIEW & MANAGEMENT
+       ========================================================= */
+    function renderMenuList(searchQuery = '') {
+      const container = document.getElementById('dishesListContainer');
+      container.innerHTML = '';
+
+      let list = [...menuList];
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        list = list.filter(d => 
+          d.name.toLowerCase().includes(q) || 
+          (d.note && d.note.toLowerCase().includes(q)) ||
+          (d.tags && d.tags.some(t => t.toLowerCase().includes(q)))
+        );
+      }
+
+      if (list.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-10 bg-white rounded-2xl border border-bistro-border p-6 text-bistro-muted text-xs">
+            <span class="text-3xl block mb-2">🍜</span>
+            找不到相關菜色，按右上角「＋新增菜色」加進去吧！
+          </div>
+        `;
+        return;
+      }
+
+      list.forEach(dish => {
+        const item = document.createElement('div');
+        item.className = `p-3.5 rounded-2xl border transition-all flex items-center justify-between ${
+          dish.active 
+            ? 'bg-white border-bistro-border shadow-card' 
+            : 'bg-stone-100/70 border-stone-200 opacity-60'
+        }`;
+
+        const tagsHtml = (dish.tags || [])
+          .map(t => `<span class="text-[10px] bg-bistro-bg text-bistro-muted font-medium px-2 py-0.5 rounded-md">${t}</span>`)
+          .join('');
+
+        item.innerHTML = `
+          <div class="flex items-center space-x-3 flex-1 min-w-0 pr-2">
+            <span class="text-2xl flex-shrink-0">${dish.emoji || '🍴'}</span>
+            <div class="min-w-0">
+              <div class="flex items-center space-x-1.5">
+                <h4 class="font-bold text-xs sm:text-sm text-bistro-dark truncate">${dish.name}</h4>
+                ${!dish.active ? '<span class="text-[10px] text-stone-400 font-bold">(已停用)</span>' : ''}
+              </div>
+              ${dish.note ? `<p class="text-[11px] text-bistro-muted truncate">${dish.note}</p>` : ''}
+              <div class="flex flex-wrap gap-1 mt-1">${tagsHtml}</div>
+            </div>
+          </div>
+
+          <div class="flex items-center space-x-1.5 flex-shrink-0">
+            <!-- Active Toggle Button -->
+            <button class="toggle-active-btn p-1.5 rounded-xl border text-xs ${
+              dish.active 
+                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' 
+                : 'bg-stone-200 text-stone-600 border-stone-300'
+            }" data-id="${dish.id}" title="${dish.active ? '點擊停用抽籤' : '點擊啟用抽籤'}">
+              ${dish.active ? '✓ 啟用' : '✕ 暫停'}
+            </button>
+            
+            <!-- Edit Button -->
+            <button class="edit-dish-btn p-2 rounded-xl text-bistro-muted hover:text-bistro-primary hover:bg-orange-50 active:scale-95 transition-all text-xs" data-id="${dish.id}" title="編輯">
+              ✏️
+            </button>
+
+            <!-- Delete Button -->
+            <button class="delete-dish-btn p-2 rounded-xl text-rose-400 hover:text-rose-600 hover:bg-rose-50 active:scale-95 transition-all text-xs" data-id="${dish.id}" title="刪除">
+              🗑️
+            </button>
+          </div>
+        `;
+
+        container.appendChild(item);
+      });
+
+      // Bind dynamic buttons
+      container.querySelectorAll('.toggle-active-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const id = btn.getAttribute('data-id');
+          toggleDishActive(id);
+        });
+      });
+
+      container.querySelectorAll('.edit-dish-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const id = btn.getAttribute('data-id');
+          openEditDishModal(id);
+        });
+      });
+
+      container.querySelectorAll('.delete-dish-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const id = btn.getAttribute('data-id');
+          confirmDeleteDish(id);
+        });
+      });
+    }
+
+    function toggleDishActive(id) {
+      const dish = menuList.find(d => d.id === id);
+      if (dish) {
+        dish.active = !dish.active;
+        saveMenu();
+        renderMenuList(document.getElementById('menuSearchInput').value);
+        drawWheel();
+      }
+    }
+
+    function confirmDeleteDish(id) {
+      const dish = menuList.find(d => d.id === id);
+      if (!dish) return;
+
+      showCustomConfirm('刪除菜色確認', `確定要把【${dish.name}】從菜單庫中移除嗎？`, '🗑️', () => {
+        menuList = menuList.filter(d => d.id !== id);
+        saveMenu();
+        renderMenuList(document.getElementById('menuSearchInput').value);
+        drawWheel();
+        showToast(`已移除【${dish.name}】`, '🗑️');
+      });
+    }
+
+    function openAddDishModal() {
+      document.getElementById('dishEditId').value = '';
+      document.getElementById('dishModalTitle').textContent = '➕ 新增私房菜色/店家';
+      document.getElementById('dishNameInput').value = '';
+      document.getElementById('dishEmojiInput').value = '🍜';
+      document.getElementById('dishNoteInput').value = '';
+
+      // Clear tag checkboxes
+      document.querySelectorAll('#formTagsList input[type="checkbox"]').forEach(cb => {
+        cb.checked = false;
+        cb.parentElement.classList.remove('bg-bistro-primary', 'text-white', 'border-bistro-primary');
+        cb.parentElement.classList.add('bg-white', 'text-bistro-dark', 'border-bistro-border');
+      });
+
+      const modal = document.getElementById('dishFormModal');
+      modal.classList.remove('opacity-0', 'pointer-events-none');
+    }
+
+    function openEditDishModal(id) {
+      const dish = menuList.find(d => d.id === id);
+      if (!dish) return;
+
+      document.getElementById('dishEditId').value = dish.id;
+      document.getElementById('dishModalTitle').textContent = '✏️ 編輯菜色資料';
+      document.getElementById('dishNameInput').value = dish.name;
+      document.getElementById('dishEmojiInput').value = dish.emoji || '🍴';
+      document.getElementById('dishNoteInput').value = dish.note || '';
+
+      // Check corresponding tags
+      document.querySelectorAll('#formTagsList input[type="checkbox"]').forEach(cb => {
+        const isChecked = dish.tags && dish.tags.includes(cb.value);
+        cb.checked = isChecked;
+        if (isChecked) {
+          cb.parentElement.classList.add('bg-bistro-primary', 'text-white', 'border-bistro-primary');
+          cb.parentElement.classList.remove('bg-white', 'text-bistro-dark', 'border-bistro-border');
+        } else {
+          cb.parentElement.classList.remove('bg-bistro-primary', 'text-white', 'border-bistro-primary');
+          cb.parentElement.classList.add('bg-white', 'text-bistro-dark', 'border-bistro-border');
+        }
+      });
+
+      const modal = document.getElementById('dishFormModal');
+      modal.classList.remove('opacity-0', 'pointer-events-none');
+    }
+
+    function closeDishFormModal() {
+      const modal = document.getElementById('dishFormModal');
+      modal.classList.add('opacity-0', 'pointer-events-none');
+    }
+
+    function handleDishFormSubmit(e) {
+      e.preventDefault();
+      const editId = document.getElementById('dishEditId').value;
+      const name = document.getElementById('dishNameInput').value.trim();
+      const emoji = document.getElementById('dishEmojiInput').value.trim() || '🍲';
+      const note = document.getElementById('dishNoteInput').value.trim();
+
+      if (!name) {
+        showToast('請輸入料理或店家名稱', '⚠️');
+        return;
+      }
+
+      // Collect tags
+      const selectedTags = [];
+      document.querySelectorAll('#formTagsList input[type="checkbox"]:checked').forEach(cb => {
+        selectedTags.push(cb.value);
+      });
+
+      if (editId) {
+        // Edit existing
+        const dish = menuList.find(d => d.id === editId);
+        if (dish) {
+          dish.name = name;
+          dish.emoji = emoji;
+          dish.note = note;
+          dish.tags = selectedTags;
+        }
+        showToast(`已更新【${name}】！`, '✅');
+      } else {
+        // Create new
+        const newDish = {
+          id: 'dish_' + Date.now(),
+          name,
+          emoji,
+          note,
+          tags: selectedTags,
+          active: true
+        };
+        menuList.unshift(newDish);
+        showToast(`已新增【${name}】到菜單庫！`, '🎉');
+      }
+
+      saveMenu();
+      closeDishFormModal();
+      renderMenuList(document.getElementById('menuSearchInput').value);
+      drawWheel();
+    }
+
+    /* Tag pill click toggle within modal form */
+    document.querySelectorAll('#formTagsList .tag-checkbox-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        const cb = pill.querySelector('input[type="checkbox"]');
+        cb.checked = !cb.checked;
+        if (cb.checked) {
+          pill.classList.add('bg-bistro-primary', 'text-white', 'border-bistro-primary');
+          pill.classList.remove('bg-white', 'text-bistro-dark', 'border-bistro-border');
+        } else {
+          pill.classList.remove('bg-bistro-primary', 'text-white', 'border-bistro-primary');
+          pill.classList.add('bg-white', 'text-bistro-dark', 'border-bistro-border');
+        }
+      });
+    });
+
+    /* =========================================================
+       8. FATE WHEEL (誰去買 / 誰洗碗)
+       ========================================================= */
+    const fateCanvas = document.getElementById('fateWheelCanvas');
+    const fateCtx = fateCanvas.getContext('2d');
+    let fateAnimationId = null;
+
+    function renderFamilyChips() {
+      const container = document.getElementById('familyChipsContainer');
+      container.innerHTML = '';
+
+      if (familyMembers.length === 0) {
+        container.innerHTML = '<span class="text-xs text-rose-500">至少需要一位家庭成員！</span>';
+        return;
+      }
+
+      familyMembers.forEach((member, idx) => {
+        const chip = document.createElement('button');
+        chip.className = 'px-3 py-1 rounded-full text-xs font-bold bg-orange-100 text-orange-900 border border-orange-200 hover:bg-rose-100 hover:text-rose-900 transition-all flex items-center space-x-1 active:scale-95';
+        chip.innerHTML = `<span>${member}</span><span class="text-[10px] text-orange-400 hover:text-rose-600">✕</span>`;
+        chip.title = '點擊刪除此成員';
+        chip.addEventListener('click', () => removeFamilyMember(idx));
+        container.appendChild(chip);
+      });
+    }
+
+    function addFamilyMember() {
+      const input = document.getElementById('newMemberInput');
+      const name = input.value.trim();
+      if (!name) return;
+
+      if (familyMembers.includes(name)) {
+        showToast('成員名字重複囉！', '⚠️');
+        return;
+      }
+
+      familyMembers.push(name);
+      saveFamily();
+      input.value = '';
+      renderFamilyChips();
+      drawFateWheel();
+    }
+
+    function removeFamilyMember(idx) {
+      if (familyMembers.length <= 2) {
+        showToast('轉盤至少需要 2 位成員參與！', '⚠️');
+        return;
+      }
+      const removed = familyMembers.splice(idx, 1);
+      saveFamily();
+      renderFamilyChips();
+      drawFateWheel();
+      showToast(`已移除【${removed[0]}】`, '👋');
+    }
+
+    function drawFateWheel() {
+      if (!fateCanvas) return;
+      const size = fateCanvas.width / (window.devicePixelRatio || 1);
+      const center = size / 2;
+      const radius = center - 6;
+
+      fateCtx.clearRect(0, 0, size, size);
+
+      const numSegments = familyMembers.length;
+      if (numSegments === 0) return;
+
+      const arcSize = (2 * Math.PI) / numSegments;
+      const colors = ['#3D5A80', '#98C1D9', '#EE6C4D', '#293241', '#E0FBFC', '#F4A261'];
+
+      for (let i = 0; i < numSegments; i++) {
+        const angle = currentFateRotation + i * arcSize;
+        const color = colors[i % colors.length];
+
+        fateCtx.save();
+        fateCtx.beginPath();
+        fateCtx.moveTo(center, center);
+        fateCtx.arc(center, center, radius, angle, angle + arcSize);
+        fateCtx.closePath();
+        fateCtx.fillStyle = color;
+        fateCtx.fill();
+
+        fateCtx.strokeStyle = '#FFFFFF';
+        fateCtx.lineWidth = 2.5;
+        fateCtx.stroke();
+
+        // Draw Name
+        fateCtx.save();
+        fateCtx.translate(center, center);
+        fateCtx.rotate(angle + arcSize / 2);
+        fateCtx.textAlign = 'right';
+
+        // Contrast text
+        fateCtx.fillStyle = (color === '#E0FBFC' || color === '#98C1D9') ? '#293241' : '#FFFFFF';
+        fateCtx.font = 'bold 13px "Noto Sans TC", sans-serif';
+        fateCtx.fillText(familyMembers[i], radius - 16, 4);
+
+        fateCtx.restore();
+        fateCtx.restore();
+      }
+
+      // Outer border
+      fateCtx.save();
+      fateCtx.beginPath();
+      fateCtx.arc(center, center, radius, 0, 2 * Math.PI);
+      fateCtx.strokeStyle = '#FFFFFF';
+      fateCtx.lineWidth = 3;
+      fateCtx.stroke();
+      fateCtx.restore();
+    }
+
+    function getSelectedFateIndex() {
+      const numSegments = familyMembers.length;
+      if (numSegments === 0) return -1;
+      const arcSize = (2 * Math.PI) / numSegments;
+      const pointerAngle = 1.5 * Math.PI; // top needle
+      let localAngle = (pointerAngle - currentFateRotation) % (2 * Math.PI);
+      if (localAngle < 0) localAngle += 2 * Math.PI;
+      return Math.floor(localAngle / arcSize) % numSegments;
+    }
+
+    function spinFateWheel() {
+      if (isFateSpinning) return;
+      if (familyMembers.length < 2) {
+        showToast('請至少新增 2 位成員再來抽籤！', '⚠️');
+        return;
+      }
+
+      isFateSpinning = true;
+      const btn1 = document.getElementById('fateSpinBtn');
+      const btn2 = document.getElementById('centerFateSpinBtn');
+      btn1.disabled = true;
+      btn2.disabled = true;
+      btn1.classList.add('opacity-70');
+
+      let lastTick = getSelectedFateIndex();
+      const pointerEl = document.getElementById('fateWheelPointer');
+      const minDuration = 3200;
+      const startTime = performance.now();
+      const startRotation = currentFateRotation;
+      const totalSpin = (Math.PI * 2 * (4 + Math.random() * 3)) + (Math.random() * Math.PI * 2);
+
+      function animateFate(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / minDuration, 1);
+        const ease = 1 - Math.pow(1 - progress, 3.5);
+        currentFateRotation = startRotation + totalSpin * ease;
+
+        drawFateWheel();
+
+        const currentSeg = getSelectedFateIndex();
+        if (currentSeg !== lastTick) {
+          sound.playTick();
+          lastTick = currentSeg;
+          if (pointerEl) {
+            pointerEl.style.transform = 'rotate(-12deg)';
+            setTimeout(() => { pointerEl.style.transform = 'rotate(0deg)'; }, 40);
+          }
+        }
+
+        if (progress < 1) {
+          fateAnimationId = requestAnimationFrame(animateFate);
+        } else {
+          isFateSpinning = false;
+          btn1.disabled = false;
+          btn2.disabled = false;
+          btn1.classList.remove('opacity-70');
+
+          const winnerIndex = getSelectedFateIndex();
+          const winner = familyMembers[winnerIndex];
+
+          sound.playWin();
+          triggerConfetti();
+          showFateResultModal(winner);
+        }
+      }
+
+      fateAnimationId = requestAnimationFrame(animateFate);
+    }
+
+    function showFateResultModal(winner) {
+      document.getElementById('fateWinnerName').textContent = winner;
+      document.getElementById('fateTaskDesc').textContent = selectedFateTask;
+
+      const modal = document.getElementById('fateResultModal');
+      const card = document.getElementById('fateResultCard');
+      modal.classList.remove('opacity-0', 'pointer-events-none');
+      card.classList.remove('scale-90');
+      card.classList.add('scale-100');
+    }
+
+    function closeFateResultModal() {
+      const modal = document.getElementById('fateResultModal');
+      const card = document.getElementById('fateResultCard');
+      card.classList.remove('scale-100');
+      card.classList.add('scale-90');
+      modal.classList.add('opacity-0', 'pointer-events-none');
+    }
+
+    /* =========================================================
+       9. RECENT HISTORY VIEW
+       ========================================================= */
+    function renderHistoryList() {
+      const container = document.getElementById('historyListContainer');
+      container.innerHTML = '';
+
+      if (historyList.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-8 text-bistro-muted text-xs">
+            <span class="text-2xl block mb-1">🍃</span>
+            尚無抽餐紀錄，今天抽完按「確認」就會記在這裡！
+          </div>
+        `;
+        return;
+      }
+
+      historyList.forEach(hist => {
+        const item = document.createElement('div');
+        item.className = 'flex items-center justify-between p-2.5 rounded-xl bg-bistro-bg/70 border border-bistro-border text-xs';
+        
+        const dateObj = new Date(hist.date);
+        const dateStr = `${dateObj.getMonth() + 1}/${dateObj.getDate()} ${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
+
+        item.innerHTML = `
+          <div class="flex items-center space-x-2">
+            <span class="text-lg">${hist.emoji || '🍲'}</span>
+            <span class="font-bold text-bistro-dark">${hist.name}</span>
+          </div>
+          <span class="text-[10px] text-bistro-muted">${dateStr}</span>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    function openHistoryModal() {
+      renderHistoryList();
+      const modal = document.getElementById('historyModal');
+      modal.classList.remove('opacity-0', 'pointer-events-none');
+    }
+
+    function closeHistoryModal() {
+      const modal = document.getElementById('historyModal');
+      modal.classList.add('opacity-0', 'pointer-events-none');
+    }
+
+    function clearHistory() {
+      showCustomConfirm('清空歷史紀錄', '確定要清空過往吃過的紀錄嗎？這會解除「避開最近吃過」的過濾限制。', '🗑️', () => {
+        historyList = [];
+        saveHistory();
+        renderHistoryList();
+        drawWheel();
+        showToast('已清空所有歷史紀錄', '🧹');
+      });
+    }
+
+    /* =========================================================
+       10. EVENT LISTENERS & NAVIGATION
+       ========================================================= */
+    function initApp() {
+      loadData();
+
+      // Setup Canvases
+      resizeCanvas(canvas);
+      resizeCanvas(fateCanvas);
+      window.addEventListener('resize', () => {
+        resizeCanvas(canvas);
+        resizeCanvas(fateCanvas);
+        drawWheel();
+        drawFateWheel();
+      });
+
+      // Render initial views
+      drawWheel();
+      drawFateWheel();
+      renderFamilyChips();
+      renderMenuList();
+      updateVetoBadge();
+
+      // Sound Toggle Button
+      const soundBtn = document.getElementById('soundToggleBtn');
+      const soundIcon = document.getElementById('soundIcon');
+      soundIcon.textContent = sound.muted ? '🔇' : '🔊';
+      soundBtn.addEventListener('click', () => {
+        const isMuted = sound.toggleMute();
+        soundIcon.textContent = isMuted ? '🔇' : '🔊';
+        showToast(isMuted ? '音效已靜音' : '音效已開啟', isMuted ? '🔇' : '🔊');
+      });
+
+      // Filter category pills click
+      document.querySelectorAll('.filter-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+          document.querySelectorAll('.filter-pill').forEach(p => {
+            p.classList.remove('bg-bistro-primary', 'text-white', 'active');
+            p.classList.add('bg-white', 'text-bistro-dark');
+          });
+          pill.classList.add('bg-bistro-primary', 'text-white', 'active');
+          pill.classList.remove('bg-white', 'text-bistro-dark');
+
+          currentCategory = pill.getAttribute('data-category');
+          drawWheel();
+        });
+      });
+
+      // Exclude Recent Checkbox Toggle
+      document.getElementById('excludeRecentToggle').addEventListener('change', () => {
+        drawWheel();
+      });
+
+      // Spin triggers
+      document.getElementById('mainSpinBtn').addEventListener('click', spinDinnerWheel);
+      document.getElementById('centerSpinBtn').addEventListener('click', spinDinnerWheel);
+      canvas.addEventListener('click', spinDinnerWheel);
+
+      // Result Modal events
+      document.getElementById('acceptDishBtn').addEventListener('click', handleAcceptDish);
+      document.getElementById('vetoDishBtn').addEventListener('click', handleVeto);
+      document.getElementById('closeResultModalBtn').addEventListener('click', closeResultModal);
+
+      // Fate Spin triggers
+      document.getElementById('fateSpinBtn').addEventListener('click', spinFateWheel);
+      document.getElementById('centerFateSpinBtn').addEventListener('click', spinFateWheel);
+      fateCanvas.addEventListener('click', spinFateWheel);
+      document.getElementById('closeFateResultBtn').addEventListener('click', closeFateResultModal);
+
+      // Fate Task selectors
+      document.querySelectorAll('#fateTaskGrid .task-pill').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('#fateTaskGrid .task-pill').forEach(b => {
+            b.classList.remove('active', 'border-bistro-primary', 'bg-orange-50', 'text-bistro-primary');
+            b.classList.add('border-bistro-border', 'bg-white', 'text-bistro-dark');
+          });
+          btn.classList.add('active', 'border-bistro-primary', 'bg-orange-50', 'text-bistro-primary');
+          btn.classList.remove('border-bistro-border', 'bg-white', 'text-bistro-dark');
+          selectedFateTask = btn.getAttribute('data-task');
+        });
+      });
+
+      // Family member add button
+      document.getElementById('addMemberBtn').addEventListener('click', addFamilyMember);
+      document.getElementById('newMemberInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') addFamilyMember();
+      });
+
+      // Menu management search & actions
+      document.getElementById('menuSearchInput').addEventListener('input', (e) => {
+        renderMenuList(e.target.value);
+      });
+
+      document.getElementById('openAddDishModalBtn').addEventListener('click', openAddDishModal);
+      document.getElementById('closeDishFormBtn').addEventListener('click', closeDishFormModal);
+      document.getElementById('dishForm').addEventListener('submit', handleDishFormSubmit);
+
+      // Reset default menu
+      document.getElementById('resetDefaultsBtn').addEventListener('click', () => {
+        showCustomConfirm('還原預設菜單', '確定要將菜單庫還原成最初的 12 道精選家常與外食嗎？自訂菜色會被替換。', '↺', () => {
+          menuList = JSON.parse(JSON.stringify(DEFAULT_DISHES));
+          saveMenu();
+          renderMenuList();
+          drawWheel();
+          showToast('已還原為預設菜單！', '✨');
+        });
+      });
+
+      // History Modal
+      document.getElementById('historyHeaderBtn').addEventListener('click', openHistoryModal);
+      document.getElementById('closeHistoryModalBtn').addEventListener('click', closeHistoryModal);
+      document.getElementById('clearHistoryBtn').addEventListener('click', clearHistory);
+
+      // Navigation Tabs
+      document.querySelectorAll('.nav-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          document.querySelectorAll('.nav-tab').forEach(t => {
+            t.classList.remove('active', 'text-bistro-primary');
+            t.classList.add('text-bistro-muted');
+          });
+          tab.classList.add('active', 'text-bistro-primary');
+          tab.classList.remove('text-bistro-muted');
+
+          const targetId = tab.getAttribute('data-target');
+          document.querySelectorAll('.tab-view').forEach(view => {
+            view.classList.add('hidden');
+          });
+          const activeView = document.getElementById(targetId);
+          if (activeView) activeView.classList.remove('hidden');
+
+          // Trigger redraw for canvases if showing spin views
+          if (targetId === 'view-spin') {
+            resizeCanvas(canvas);
+            drawWheel();
+          } else if (targetId === 'view-fate') {
+            resizeCanvas(fateCanvas);
+            drawFateWheel();
+          }
+        });
+      });
+    }
+
+    // Start on Window Load
+    window.onload = function() {
+      initApp();
+    };
+  </script>
+</body>
+</html>
